@@ -6,8 +6,6 @@ using System.Collections;
  * http://carpe.com.au/slawia/2009/08/unity-wheel-collider-part-2/
  * 
  * To do:
- * - Change steering to rear motors
- * - Change front wheels to react to environment
  * - Add pause between forward and reverse?
 */
 
@@ -33,7 +31,7 @@ public class CarControllerAdvanced : MonoBehaviour {
 
     public bool debugDisplay = true; // Whether or not debug information should be displayed
 
-    Quaternion angleNinetyY = Quaternion.Euler(0.0f, 90.0f, 0.0f); // Create a Quaternion that is rotated 90 degrees in the y direction
+    Quaternion angleCorrection = Quaternion.Euler(0.0f, 0.0f, 90.0f); // Create a Quaternion that is rotated 90 degrees in the z direction
 
     float steer = 0.0f;
     float forward = 0.0f;
@@ -86,16 +84,16 @@ public class CarControllerAdvanced : MonoBehaviour {
         wheelModBackRight.position = wheelColBackRight.transform.position;
 
         // Update the (y component) rotation of the wheels
-        wheelModFrontLeft.localRotation = Quaternion.Euler(0.0f, wheelFrontLeft.steerAngle, 0.0f);
-        wheelModFrontRight.localRotation = Quaternion.Euler(0.0f, wheelFrontRight.steerAngle, 0.0f);
-        wheelModBackLeft.rotation = wheelColBackLeft.transform.rotation * angleNinetyY;
-        wheelModBackRight.rotation = wheelColBackRight.transform.rotation * angleNinetyY;
+        wheelModFrontLeft.localRotation = Quaternion.Euler(0.0f, wheelFrontLeft.steerAngle, 0.0f) * angleCorrection;
+        wheelModFrontRight.localRotation = Quaternion.Euler(0.0f, wheelFrontRight.steerAngle, 0.0f) * angleCorrection;
+        wheelModBackLeft.rotation = wheelColBackLeft.transform.rotation * angleCorrection;
+        wheelModBackRight.rotation = wheelColBackRight.transform.rotation * angleCorrection;
         
         // Update the (z component) rotation of the wheels (relative to current values)
-        wheelModFrontLeft.Rotate(0.0f, 0.0f, wheelFrontLeft.rpm * dps * Time.deltaTime);
-        wheelModFrontRight.Rotate(0.0f, 0.0f, wheelFrontRight.rpm * dps * Time.deltaTime);
-        wheelModBackLeft.Rotate(0.0f, 0.0f, wheelBackLeft.rpm * dps * Time.deltaTime);
-        wheelModBackRight.Rotate(0.0f, 0.0f, wheelBackRight.rpm * dps * Time.deltaTime);        
+        wheelModFrontLeft.Rotate(0.0f, wheelFrontLeft.rpm * dps * Time.deltaTime, 0.0f);
+        wheelModFrontRight.Rotate(0.0f, wheelFrontRight.rpm * dps * Time.deltaTime, 0.0f);
+        wheelModBackLeft.Rotate(0.0f, wheelBackLeft.rpm * dps * Time.deltaTime, 0.0f);
+        wheelModBackRight.Rotate(0.0f, wheelBackRight.rpm * dps * Time.deltaTime, 0.0f);        
 
         // Calculate the speed of the 
         speed = rigidbody.velocity.sqrMagnitude;
