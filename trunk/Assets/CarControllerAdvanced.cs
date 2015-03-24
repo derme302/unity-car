@@ -50,7 +50,7 @@ public class CarControllerAdvanced : MonoBehaviour {
 	// Use this for initialization
 	void Start() {
         // Set centre of mass to what is defined in the inspector
-        rigidbody.centerOfMass += objectCentreOfMass;
+        GetComponent<Rigidbody>().centerOfMass += objectCentreOfMass;
 
         // Store the handles for the wheel components
         wheelFrontLeft = wheelColFrontLeft.GetComponent<WheelCollider>();
@@ -96,7 +96,7 @@ public class CarControllerAdvanced : MonoBehaviour {
         wheelModBackRight.Rotate(0.0f, wheelBackRight.rpm * dps * Time.deltaTime, 0.0f);        
 
         // Calculate the speed of the 
-        speed = rigidbody.velocity.sqrMagnitude;
+        speed = GetComponent<Rigidbody>().velocity.sqrMagnitude;
 
         if ((int)speed == 0) { // Cast as an (int) due to the accuracy of floating point and the physics setup, speed will never be exactly zero
             if (back > 0)
