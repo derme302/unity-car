@@ -1,27 +1,107 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
-/*
- * Originally written in JS
- * http://carpe.com.au/slawia/2009/08/unity-wheel-collider-part-2/
- * 
- * To do:
- * - Add pause between forward and reverse?
-*/
+public enum Side {
+    left,
+    right
+};
+
+[System.Serializable]
+public class WheelSet {
+
+    const int dps = 6; // Conversion from rpm to degrees per second (was -6)
+    Quaternion angleCorrection = Quaternion.Euler(0.0f, 0.0f, 90.0f); // Create a Quaternion that is rotated 90 degrees in the z direction
+
+    public GameObject wheelLeftGo;
+    public Transform wheelLeftT;
+    WheelCollider wheelLeftWc;
+    
+    public GameObject wheelRightGo;
+    public Transform wheelRightT;
+    WheelCollider wheelRightWc;
+    
+    public bool motor; // Is this wheel attached to a motor?
+    public bool steering; // Does this wheel apply steer angle?
+    bool setup;
+    
+    /// <summary>
+    /// Makes a wheel turn (Called in FixedUpdate)
+    /// </summary>
+    /// <param name="side">Which side of the wheel set should turn</param>
+    /// <param name="motor">How fast the wheel should turn</param>
+    /// <param name="max">Max speed of the wheel</param>
+    public void Throttle(Side side, float motor, float max) {
+        if (side == Side.left)
+            wheelLeftWc.motorTorque = -1 * max * motor;
+        else
+            wheelRightWc.motorTorque = -1 * max * motor;
+    }
+
+    /// <summary>
+    /// Makes a wheel stop (Called in FixedUpdate)
+    /// </summary>
+    /// <param name="side">Which side of the wheel set should stop</param>
+    /// <param name="motor">How fast the wheel should stop</param>
+    /// <param name="max">Max amount of brakes</param>
+    public void Brake(Side side, float brake, float max) {
+        if (side == Side.left)
+            wheelLeftWc.brakeTorque = max * brake;
+        else
+            wheelRightWc.brakeTorque = max * brake;
+    }
+
+    public void Steer(Side side, float amount, float max) {
+        if (side == Side.left)
+            wheelLeftWc.steerAngle = max * amount;
+        else
+            wheelRightWc.steerAngle = max * amount;
+    }
+
+    /// <summary>
+    /// Store the handles for the wheel components
+    /// </summary>
+    public void Init() {
+        wheelLeftWc = wheelLeftT.GetComponent<WheelCollider>();
+        wheelRightWc = wheelRightT.GetComponent<WheelCollider>();
+    }
+
+    /// <summary>
+    /// Behind the scenes magic (Called in Update)
+    /// </summary>
+    public void UpdateWheels() {
+        // Update location of rendered model (dependent on collision meshes)
+        wheelLeftT.position = wheelLeftWc.transform.position;
+        wheelRightT.position = wheelRightWc.transform.position;
+
+        // Update the (z component) rotation of the wheels (relative to current values)
+        wheelLeftT.Rotate(0.0f, wheelLeftWc.rpm * dps * Time.deltaTime, 0.0f);
+        wheelRightT.Rotate(0.0f, wheelRightWc.rpm * dps * Time.deltaTime, 0.0f);
+
+        // Update the (y component) rotation of the wheels
+        wheelLeftT.rotation = wheelLeftWc.transform.rotation * angleCorrection;
+        wheelRightT.rotation = wheelRightWc.transform.rotation * angleCorrection;  
+    }
+
+    /// <summary>
+    /// Get the ammount of Torque of a wheel
+    /// </summary>
+    /// <param name="side">Which side of the wheel you want the torque of</param>
+    /// <returns>The ammount of Torque the wheel is supplying</returns>
+    public string GetTorque(Side side) {
+        if (side == Side.left)
+            return wheelLeftWc.motorTorque.ToString();
+        else
+            return wheelRightWc.motorTorque.ToString();
+    }
+}
 
 public class CarControllerAdvanced : MonoBehaviour {
 
-    const int dps = 6; // Conversion from rpm to degrees per second (was -6)
+    Quaternion angleCorrection = Quaternion.Euler(0.0f, 0.0f, 90.0f); // Create a Quaternion that is rotated 90 degrees in the z direction
 
-    public GameObject wheelColFrontLeft;
-    public GameObject wheelColFrontRight;
-    public GameObject wheelColBackLeft;
-    public GameObject wheelColBackRight;
-
-    public Transform wheelModFrontLeft;
-    public Transform wheelModFrontRight;
-    public Transform wheelModBackLeft;
-    public Transform wheelModBackRight;
+    public WheelSet frontSet;
+    public WheelSet backSet;
 
     public float steerMax; // Max angle wheels rotate (In degrees)
     public float motorMax; // Max torque of motors (In N*m)
@@ -31,8 +111,6 @@ public class CarControllerAdvanced : MonoBehaviour {
 
     public bool debugDisplay = true; // Whether or not debug information should be displayed
 
-    Quaternion angleCorrection = Quaternion.Euler(0.0f, 0.0f, 90.0f); // Create a Quaternion that is rotated 90 degrees in the z direction
-
     float steer = 0.0f;
     float forward = 0.0f;
     float back = 0.0f;
@@ -41,22 +119,15 @@ public class CarControllerAdvanced : MonoBehaviour {
     float brake = 0.0f;
 
     bool reverse = false;
-
-    WheelCollider wheelFrontLeft;
-    WheelCollider wheelFrontRight;
-    WheelCollider wheelBackLeft;
-    WheelCollider wheelBackRight;
    
 	// Use this for initialization
 	void Start() {
         // Set centre of mass to what is defined in the inspector
         GetComponent<Rigidbody>().centerOfMass += objectCentreOfMass;
 
-        // Store the handles for the wheel components
-        wheelFrontLeft = wheelColFrontLeft.GetComponent<WheelCollider>();
-        wheelFrontRight = wheelColFrontRight.GetComponent<WheelCollider>();
-        wheelBackLeft = wheelColBackLeft.GetComponent<WheelCollider>();
-        wheelBackRight = wheelColBackRight.GetComponent<WheelCollider>();
+        // Setup the wheel sets
+        frontSet.Init();
+        backSet.Init();
 	}
 
     void OnGUI() {
@@ -66,8 +137,8 @@ public class CarControllerAdvanced : MonoBehaviour {
             GUI.Label(new Rect(10.0f, 30.0f, 100.0f, 20.0f), "Steer: " + steer.ToString());
             GUI.Label(new Rect(10.0f, 50.0f, 100.0f, 20.0f), "Motor: " + motor.ToString());
             GUI.Label(new Rect(10.0f, 70.0f, 100.0f, 20.0f), "Brake: " + brake.ToString());
-            GUI.Label(new Rect(10.0f, 90.0f, 500.0f, 20.0f), "Left Motor Torque: " + wheelBackLeft.motorTorque.ToString());
-            GUI.Label(new Rect(10.0f, 110.0f, 500.0f, 20.0f), "Right Motor Torque: " + wheelBackRight.motorTorque.ToString());
+            GUI.Label(new Rect(10.0f, 90.0f, 500.0f, 20.0f), "Left Motor Torque: " + backSet.GetTorque(Side.left));
+            GUI.Label(new Rect(10.0f, 110.0f, 500.0f, 20.0f), "Right Motor Torque: " + backSet.GetTorque(Side.right));
         }
     }
 
@@ -77,26 +148,15 @@ public class CarControllerAdvanced : MonoBehaviour {
         forward = Mathf.Clamp(Input.GetAxis("Vertical"), 0, 1);
         back = -1 * Mathf.Clamp(Input.GetAxis("Vertical"), -1, 0);
 
-        // Update location of rendered model (dependent on collision meshes)
-        wheelModFrontLeft.position = wheelColFrontLeft.transform.position;
-        wheelModFrontRight.position = wheelColFrontRight.transform.position;
-        wheelModBackLeft.position = wheelColBackLeft.transform.position;
-        wheelModBackRight.position = wheelColBackRight.transform.position;
+        frontSet.UpdateWheels();
+        backSet.UpdateWheels();
 
         // Update the (y component) rotation of the wheels
-        wheelModFrontLeft.localRotation = Quaternion.Euler(0.0f, wheelFrontLeft.steerAngle, 0.0f) * angleCorrection;
-        wheelModFrontRight.localRotation = Quaternion.Euler(0.0f, wheelFrontRight.steerAngle, 0.0f) * angleCorrection;
-        wheelModBackLeft.rotation = wheelColBackLeft.transform.rotation * angleCorrection;
-        wheelModBackRight.rotation = wheelColBackRight.transform.rotation * angleCorrection;
-        
-        // Update the (z component) rotation of the wheels (relative to current values)
-        wheelModFrontLeft.Rotate(0.0f, wheelFrontLeft.rpm * dps * Time.deltaTime, 0.0f);
-        wheelModFrontRight.Rotate(0.0f, wheelFrontRight.rpm * dps * Time.deltaTime, 0.0f);
-        wheelModBackLeft.Rotate(0.0f, wheelBackLeft.rpm * dps * Time.deltaTime, 0.0f);
-        wheelModBackRight.Rotate(0.0f, wheelBackRight.rpm * dps * Time.deltaTime, 0.0f);        
+        frontSet.wheelLeftT.localRotation = Quaternion.Euler(0.0f, steer * steerMax, 0.0f) * angleCorrection;
+        frontSet.wheelRightT.localRotation = Quaternion.Euler(0.0f, steer * steerMax, 0.0f) * angleCorrection;
 
         // Calculate the speed of the 
-        speed = GetComponent<Rigidbody>().velocity.sqrMagnitude;
+        speed = GetComponent<Rigidbody>().velocity.magnitude;
 
         if ((int)speed == 0) { // Cast as an (int) due to the accuracy of floating point and the physics setup, speed will never be exactly zero
             if (back > 0)
@@ -118,26 +178,16 @@ public class CarControllerAdvanced : MonoBehaviour {
 	// Update is called once per frame
 	void FixedUpdate() {
 
-
-        // The code here is for a rear steering system (That doesn't work)
-        //if (steer >= 0.15f || steer <= -0.15f) {
-        //    wheelBackLeft.motorTorque = -1 * motorMax * Mathf.Clamp((steer), -1.0f, 1.0f);
-        //    wheelBackRight.motorTorque = -1 * motorMax * Mathf.Clamp((steer), -1.0f, 1.0f);
-        //}
-        //else {
-
-            wheelBackLeft.motorTorque = -1 * motorMax * motor;
-            wheelBackRight.motorTorque = -1 * motorMax * motor;
-
-        //}
-
+        // Throttle
+        backSet.Throttle(Side.left, motor, motorMax);
+        backSet.Throttle(Side.right, motor, motorMax);
+        
         // Brakes
-        wheelBackLeft.brakeTorque = brakeMax * brake;
-        wheelBackRight.brakeTorque = brakeMax * brake;
+        backSet.Brake(Side.left, brake, brakeMax);
+        backSet.Brake(Side.right, brake, brakeMax);
 
         // Steering (This needs to be changed to be dependent on rear motors)
-        wheelFrontLeft.steerAngle = steerMax * steer;
-        wheelFrontRight.steerAngle = steerMax * steer;
-
+        frontSet.Steer(Side.left, steer, steerMax);
+        frontSet.Steer(Side.right, steer, steerMax);
 	}
 }
