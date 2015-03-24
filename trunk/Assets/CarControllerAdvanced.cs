@@ -151,7 +151,7 @@ public class CarControllerAdvanced : MonoBehaviour {
         frontSet.UpdateWheels();
         backSet.UpdateWheels();
 
-        // Update the (y component) rotation of the wheels
+        // This code hasn't been updated to Unity 5, should be moved to the WheelSet class and make the steering wheels turn
         frontSet.wheelLeftT.localRotation = Quaternion.Euler(0.0f, steer * steerMax, 0.0f) * angleCorrection;
         frontSet.wheelRightT.localRotation = Quaternion.Euler(0.0f, steer * steerMax, 0.0f) * angleCorrection;
 
