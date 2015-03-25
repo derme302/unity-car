@@ -10,6 +10,7 @@ public enum Side {
 [System.Serializable]
 public class WheelSet {
 
+    Quaternion angleCorrection = Quaternion.Euler(0.0f, 0.0f, 90.0f); // Create a Quaternion that is rotated 90 degrees in the z direction
     const int dps = 6; // Conversion from rpm to degrees per second (was -6)
 
     public GameObject wheelLeftGo;
@@ -23,6 +24,10 @@ public class WheelSet {
     public bool drive; // Is this wheel attached to a drive?
     public bool brakes; // Does it have brakes?
     public bool steering; // Does this wheel apply steer angle?
+
+    float steerAngle;
+    Vector3 rotationCurrent;
+    Vector3 tempRotation = new Vector3(0.0f, 0.0f, 0.0f);
     
     /// <summary>
     /// Makes a wheel turn (Called in FixedUpdate)
@@ -55,11 +60,13 @@ public class WheelSet {
     }
 
     public void Steer(Side side, float amount, float max) {
+        steerAngle = amount * max;
+
         if (steering) {
             if (side == Side.left)
-                wheelLeftWc.steerAngle = max * amount;
+                wheelLeftWc.steerAngle = steerAngle;
             else
-                wheelRightWc.steerAngle = max * amount;
+                wheelRightWc.steerAngle = steerAngle;
         }
     }
 
@@ -69,6 +76,8 @@ public class WheelSet {
     public void Init() {
         wheelLeftWc = wheelLeftT.GetComponent<WheelCollider>();
         wheelRightWc = wheelRightT.GetComponent<WheelCollider>();
+
+        rotationCurrent = wheelLeftGo.transform.eulerAngles;
     }
 
     /// <summary>
@@ -80,12 +89,21 @@ public class WheelSet {
         wheelRightT.position = wheelRightWc.transform.position;
 
         // Update the (z component) rotation of the wheels (relative to current values)
-        wheelLeftT.Rotate(wheelLeftWc.rpm * dps * Time.deltaTime, 0.0f, 0.0f);
-        wheelRightT.Rotate(wheelRightWc.rpm * dps * Time.deltaTime, 0.0f, 0.0f);
+        //wheelLeftGo.transform.Rotate(wheelLeftWc.rpm * dps * Time.deltaTime, 0.0f, 0.0f);
+        //wheelRightGo.transform.Rotate(wheelRightWc.rpm * dps * Time.deltaTime, 0.0f, 0.0f);
 
         // Update the (y component) rotation of the wheels
-        wheelLeftT.rotation = wheelLeftWc.transform.rotation;
-        wheelRightT.rotation = wheelRightWc.transform.rotation;  
+        if (steering) {
+            tempRotation.y = Mathf.Lerp(tempRotation.y, steerAngle, 0.2f);
+            Debug.Log("Temp " + tempRotation.y.ToString());
+            rotationCurrent.y = tempRotation.y;
+            wheelLeftGo.transform.localEulerAngles = rotationCurrent;
+            wheelRightGo.transform.localEulerAngles = rotationCurrent;
+        }
+        else {
+            wheelLeftGo.transform.rotation = wheelLeftWc.transform.rotation * angleCorrection;
+            wheelRightGo.transform.rotation = wheelRightWc.transform.rotation * angleCorrection;
+        }
     }
 
     /// <summary>
@@ -153,10 +171,6 @@ public class CarControllerAdvanced : MonoBehaviour {
 
         frontSet.UpdateWheels();
         backSet.UpdateWheels();
-
-        // This code hasn't been updated to Unity 5, should be moved to the WheelSet class and make the steering wheels turn
-        frontSet.wheelLeftT.localRotation = Quaternion.Euler(0.0f, steer * steerMax, 0.0f);
-        frontSet.wheelRightT.localRotation = Quaternion.Euler(0.0f, steer * steerMax, 0.0f);
 
         // Calculate the speed of the 
         speed = GetComponent<Rigidbody>().velocity.magnitude;
