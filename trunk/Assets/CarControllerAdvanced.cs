@@ -87,8 +87,8 @@ public class WheelSet {
     /// </summary>
     public void UpdateWheels() {
         // Update location of rendered model (dependent on collision meshes)
-        wheelLeftT.position = wheelLeftWc.transform.position;
-        wheelRightT.position = wheelRightWc.transform.position;
+        wheelLeftGo.transform.position = wheelLeftWc.transform.position;
+        wheelRightGo.transform.position = wheelRightWc.transform.position;
 
         // Update the (z component) rotation of the wheels (relative to current values)
         wheelLeftGo.transform.Rotate(wheelLeftWc.rpm * dps * Time.deltaTime, 0.0f, 0.0f);
