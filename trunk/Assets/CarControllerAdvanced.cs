@@ -11,7 +11,6 @@ public enum Side {
 public class WheelSet {
 
     const int dps = 6; // Conversion from rpm to degrees per second (was -6)
-    Quaternion angleCorrection = Quaternion.Euler(0.0f, 0.0f, 90.0f); // Create a Quaternion that is rotated 90 degrees in the z direction
 
     public GameObject wheelLeftGo;
     public Transform wheelLeftT;
@@ -75,12 +74,12 @@ public class WheelSet {
         wheelRightT.position = wheelRightWc.transform.position;
 
         // Update the (z component) rotation of the wheels (relative to current values)
-        wheelLeftT.Rotate(0.0f, wheelLeftWc.rpm * dps * Time.deltaTime, 0.0f);
-        wheelRightT.Rotate(0.0f, wheelRightWc.rpm * dps * Time.deltaTime, 0.0f);
+        wheelLeftT.Rotate(wheelLeftWc.rpm * dps * Time.deltaTime, 0.0f, 0.0f);
+        wheelRightT.Rotate(wheelRightWc.rpm * dps * Time.deltaTime, 0.0f, 0.0f);
 
         // Update the (y component) rotation of the wheels
-        wheelLeftT.rotation = wheelLeftWc.transform.rotation * angleCorrection;
-        wheelRightT.rotation = wheelRightWc.transform.rotation * angleCorrection;  
+        wheelLeftT.rotation = wheelLeftWc.transform.rotation;
+        wheelRightT.rotation = wheelRightWc.transform.rotation;  
     }
 
     /// <summary>
@@ -97,8 +96,6 @@ public class WheelSet {
 }
 
 public class CarControllerAdvanced : MonoBehaviour {
-
-    Quaternion angleCorrection = Quaternion.Euler(0.0f, 0.0f, 90.0f); // Create a Quaternion that is rotated 90 degrees in the z direction
 
     public WheelSet frontSet;
     public WheelSet backSet;
@@ -152,8 +149,8 @@ public class CarControllerAdvanced : MonoBehaviour {
         backSet.UpdateWheels();
 
         // This code hasn't been updated to Unity 5, should be moved to the WheelSet class and make the steering wheels turn
-        frontSet.wheelLeftT.localRotation = Quaternion.Euler(0.0f, steer * steerMax, 0.0f) * angleCorrection;
-        frontSet.wheelRightT.localRotation = Quaternion.Euler(0.0f, steer * steerMax, 0.0f) * angleCorrection;
+        frontSet.wheelLeftT.localRotation = Quaternion.Euler(0.0f, steer * steerMax, 0.0f);
+        frontSet.wheelRightT.localRotation = Quaternion.Euler(0.0f, steer * steerMax, 0.0f);
 
         // Calculate the speed of the 
         speed = GetComponent<Rigidbody>().velocity.magnitude;
