@@ -91,8 +91,8 @@ public class WheelSet {
         wheelRightT.position = wheelRightWc.transform.position;
 
         // Update the (z component) rotation of the wheels (relative to current values)
-        //wheelLeftGo.transform.Rotate(wheelLeftWc.rpm * dps * Time.deltaTime, 0.0f, 0.0f);
-        //wheelRightGo.transform.Rotate(wheelRightWc.rpm * dps * Time.deltaTime, 0.0f, 0.0f);
+        wheelLeftGo.transform.Rotate(wheelLeftWc.rpm * dps * Time.deltaTime, 0.0f, 0.0f);
+        wheelRightGo.transform.Rotate(wheelRightWc.rpm * dps * Time.deltaTime, 0.0f, 0.0f);
 
         // Update the (y component) rotation of the wheels
         if (steering) {
