@@ -26,7 +26,8 @@ public class WheelSet {
     public bool steering; // Does this wheel apply steer angle?
 
     float steerAngle;
-    Vector3 rotationCurrent;
+    Vector3 wheelRightRotationCurrent;
+    Vector3 wheelLeftRotationCurrent;
     Vector3 tempRotation = new Vector3(0.0f, 0.0f, 0.0f);
     
     /// <summary>
@@ -77,7 +78,8 @@ public class WheelSet {
         wheelLeftWc = wheelLeftT.GetComponent<WheelCollider>();
         wheelRightWc = wheelRightT.GetComponent<WheelCollider>();
 
-        rotationCurrent = wheelLeftGo.transform.eulerAngles;
+        wheelLeftRotationCurrent = wheelLeftGo.transform.eulerAngles;
+        wheelRightRotationCurrent = wheelLeftGo.transform.eulerAngles;
     }
 
     /// <summary>
@@ -95,10 +97,10 @@ public class WheelSet {
         // Update the (y component) rotation of the wheels
         if (steering) {
             tempRotation.y = Mathf.Lerp(tempRotation.y, steerAngle, 0.2f);
-            Debug.Log("Temp " + tempRotation.y.ToString());
-            rotationCurrent.y = tempRotation.y;
-            wheelLeftGo.transform.localEulerAngles = rotationCurrent;
-            wheelRightGo.transform.localEulerAngles = rotationCurrent;
+            wheelRightRotationCurrent.y = tempRotation.y;
+            wheelLeftRotationCurrent.y = tempRotation.y;
+            wheelLeftGo.transform.localEulerAngles = wheelLeftRotationCurrent;
+            wheelRightGo.transform.localEulerAngles = wheelRightRotationCurrent;
         }
         else {
             wheelLeftGo.transform.rotation = wheelLeftWc.transform.rotation * angleCorrection;
