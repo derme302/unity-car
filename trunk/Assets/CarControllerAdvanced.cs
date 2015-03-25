@@ -20,9 +20,9 @@ public class WheelSet {
     public Transform wheelRightT;
     WheelCollider wheelRightWc;
     
-    public bool motor; // Is this wheel attached to a motor?
+    public bool drive; // Is this wheel attached to a drive?
+    public bool brakes; // Does it have brakes?
     public bool steering; // Does this wheel apply steer angle?
-    bool setup;
     
     /// <summary>
     /// Makes a wheel turn (Called in FixedUpdate)
@@ -31,10 +31,12 @@ public class WheelSet {
     /// <param name="motor">How fast the wheel should turn</param>
     /// <param name="max">Max speed of the wheel</param>
     public void Throttle(Side side, float motor, float max) {
-        if (side == Side.left)
-            wheelLeftWc.motorTorque = -1 * max * motor;
-        else
-            wheelRightWc.motorTorque = -1 * max * motor;
+        if (drive) {
+            if (side == Side.left)
+                wheelLeftWc.motorTorque = -1 * max * motor;
+            else
+                wheelRightWc.motorTorque = -1 * max * motor;
+        }
     }
 
     /// <summary>
@@ -44,17 +46,21 @@ public class WheelSet {
     /// <param name="motor">How fast the wheel should stop</param>
     /// <param name="max">Max amount of brakes</param>
     public void Brake(Side side, float brake, float max) {
-        if (side == Side.left)
-            wheelLeftWc.brakeTorque = max * brake;
-        else
-            wheelRightWc.brakeTorque = max * brake;
+        if (brakes) {
+            if (side == Side.left)
+                wheelLeftWc.brakeTorque = max * brake;
+            else
+                wheelRightWc.brakeTorque = max * brake;
+        }
     }
 
     public void Steer(Side side, float amount, float max) {
-        if (side == Side.left)
-            wheelLeftWc.steerAngle = max * amount;
-        else
-            wheelRightWc.steerAngle = max * amount;
+        if (steering) {
+            if (side == Side.left)
+                wheelLeftWc.steerAngle = max * amount;
+            else
+                wheelRightWc.steerAngle = max * amount;
+        }
     }
 
     /// <summary>
@@ -176,15 +182,21 @@ public class CarControllerAdvanced : MonoBehaviour {
 	void FixedUpdate() {
 
         // Throttle
+        frontSet.Throttle(Side.left, motor, motorMax);
+        frontSet.Throttle(Side.right, motor, motorMax);
         backSet.Throttle(Side.left, motor, motorMax);
         backSet.Throttle(Side.right, motor, motorMax);
         
         // Brakes
+        frontSet.Brake(Side.left, brake, brakeMax);
+        frontSet.Brake(Side.right, brake, brakeMax);
         backSet.Brake(Side.left, brake, brakeMax);
         backSet.Brake(Side.right, brake, brakeMax);
 
         // Steering (This needs to be changed to be dependent on rear motors)
         frontSet.Steer(Side.left, steer, steerMax);
         frontSet.Steer(Side.right, steer, steerMax);
+        backSet.Steer(Side.left, steer, steerMax);
+        backSet.Steer(Side.right, steer, steerMax);
 	}
 }
