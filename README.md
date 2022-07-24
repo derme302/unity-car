@@ -1,6 +1,8 @@
 # Unity - Simple Car Demo
 *Built with Unity 2021.3.6f1*
 
+![Unity-Car](docs/unity-car.png)
+
 This project is a simple car demo for [Unity](http://unity3d.com/) which tries to make it as simple as possible to get a basic vehicle up and running.
 
 ## How it works
