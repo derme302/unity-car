@@ -7,7 +7,7 @@ This project is a simple car demo for [Unity](http://unity3d.com/) which tries t
 I'll write up more later about the specifics, but basically it shows how you implement Unity's WheelCollider component to get a simple car moving.
 
 ## What can the project do right now?
-The extension has two parts, the first is a really basic CarControllerSimple class, which has the bare bones of what you need to get a car moving. (Not yet working with Unity 2021)
+The extension has two parts, the first is a really basic CarControllerSimple class, which has the bare bones of what you need to get a car moving.
 
 However where the project really gets interesting is the CarAdvancedController, which makes use of the addition of the WheelSet class (A fancy wrapper for WheelColiders), this class has the functions listed below. This class does a lot of the heavy lifting for you and lets you focus on just getting the car moving how you want it to.
 

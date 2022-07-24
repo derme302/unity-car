@@ -108,7 +108,7 @@ public class WheelSet {
     }
 
     /// <summary>
-    /// Get the ammount of Torque of a wheel
+    /// Get the amount of Torque of a wheel
     /// </summary>
     /// <param name="side">Which side of the wheel you want the torque of</param>
     /// <returns>The ammount of Torque the wheel is supplying</returns>
