@@ -1,14 +1,15 @@
 # Unity - Simple Car Demo
+*Built with Unity 2021.3.6f1*
 
 This project is a simple car demo for [Unity](http://unity3d.com/) which tries to make it as simple as possible to get a basic vehicle up and running.
 
 ## How it works
-I'll write up more later about the specifics, but basically it shows how you implement Unity's WheelColider component to get a simple car moving.
+I'll write up more later about the specifics, but basically it shows how you implement Unity's WheelCollider component to get a simple car moving.
 
 ## What can the project do right now?
-The extension has two parts, the first is a really basic CarControllerSimple class, which has the bare bones of what you need to get a car moving. (Not yet working with Unity 5)
+The extension has two parts, the first is a really basic CarControllerSimple class, which has the bare bones of what you need to get a car moving. (Not yet working with Unity 2021)
 
-However where the project really gets interesting is the CarAdvancedController, which makes use of the adds the WheelSet class (A fancy wrapper for WheelColiders), this class has the functions listed below. This class does a lot of the heavy lifting for you and lets you focus on just getting the car moving how you want it to.
+However where the project really gets interesting is the CarAdvancedController, which makes use of the addition of the WheelSet class (A fancy wrapper for WheelColiders), this class has the functions listed below. This class does a lot of the heavy lifting for you and lets you focus on just getting the car moving how you want it to.
 
 ```csharp
 public void Init();
@@ -26,7 +27,7 @@ A special thanks to [@barlo695](https://twitter.com/barlo695) who recently went 
 
 If you would like to add something feel free to do so!
 
-The project is currently under the MIT Licence (MIT)
+The project is currently under the MIT License (MIT)
 
 ## Support or Contact
 Having trouble getting the car demo? Either try me ([@derme302](https://twitter.com/derme302)) or [@barlo695](https://twitter.com/barlo695) on Twitter.
